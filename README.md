@@ -1,5 +1,6 @@
 ## Azure Cognitive Seach with a Custom Skill and Azure Open AI
 
+### Note this repo only works with supported data types for the layout api for form recognizer (pdfs, etc)
 ### Required components:
 - Blob Storage (with a container holding your docs)
 - Function App (be sure to set your application settings)
