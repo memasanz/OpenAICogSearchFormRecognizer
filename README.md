@@ -16,7 +16,7 @@ FORMS_RECOGNIZER_KEY = '<yourkeygoeshere>'
 
 COG_SEARCH_ENDPOINT = 'https://<search-resource>.search.windows.net'
 COG_SEARCH_INDEX_NAME = 'index-name' 
-COG_SEARCH_KEY = 'ODdaflxDWvvjUCUG4Pz18qFqztqIOpYzWxGyFBJJGMAzSeBsTY73'
+COG_SEARCH_KEY = 'ODdaflxDWvvjUCUG4Pz18qFqztzWxGyF73'
 
 TEXT_EMBEDDING_MODEL = 'text-embedding-ada-002'
 OPENAI_API_BASE = 'https://xxxxxx.openai.azure.com'
