@@ -5,7 +5,7 @@
 - Blob Storage (with a container holding your docs)
 - Function App (be sure to set your application settings)
 - Cognitive Search (be sure to enable semantic search on the resource)
-- Document Intelligence or Azure AI Multi-Service Account
+- Document Intelligence or Azure AI Multi-Service Account (turn on System Assigned Managed Identity - and provide access to storage account at the container level "Storage Blob Data Reader". )
 
 ### .env file for running the notebook
 In your .env file include the following parameters:
@@ -16,7 +16,7 @@ FORMS_RECOGNIZER_KEY = '<yourkeygoeshere>'
 
 COG_SEARCH_ENDPOINT = 'https://<search-resource>.search.windows.net'
 COG_SEARCH_INDEX_NAME = 'index-name' 
-COG_SEARCH_KEY = 'ODdaflxDWvvjUCUG4Pz18qFqztzWxGyF73'
+COG_SEARCH_KEY = 'ODdaflxDWvvXXXXXqFqztzWxGyF73'
 
 TEXT_EMBEDDING_MODEL = 'text-embedding-ada-002'
 OPENAI_API_BASE = 'https://xxxxxx.openai.azure.com'

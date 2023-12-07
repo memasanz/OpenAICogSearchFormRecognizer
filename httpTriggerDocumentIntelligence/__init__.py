@@ -13,12 +13,11 @@ import json
 import os
 import openai
 from OutputTables import OutputTables, OutputTable, TableCell
-from openai.embeddings_utils import get_embedding
 import pandas as pd
 import re
 
 
-
+#code 12/7
 
 def push_to_vector_index(data, embeddings, source):
     logging.info('push_to_vector_index')
@@ -29,7 +28,7 @@ def push_to_vector_index(data, embeddings, source):
     credential = AzureKeyCredential(key)
 
     search_client = SearchClient(endpoint=service_endpoint, index_name=index_name, credential=credential)
-    title_embeddings = generate_embeddings(source)
+    title_embeddings = get_embedding(source)
 
     path = "https://" + os.environ['STORAGE_ACCOUNT'] + ".blob.core.windows.net/" + os.environ['STORAGE_ACCOUNT_CONTAINER'] + "/" + source
     path = path.replace(' ', '%20')
@@ -132,6 +131,31 @@ def get_tables_by_page(Outputtables, page_number):
             filtered_tables.append(table)  
     return filtered_tables
 
+def get_client():
+    endpoint = os.getenv("OPENAI_API_BASE")
+    api_key = os.getenv("OPENAI_API_KEY")
+    openai_type = os.getenv("OPENAI_API_TYPE", None)
+    api_version = os.getenv("OPENAI_API_VERSION", None)
+ 
+    if openai_type=='azure':
+        client = openai.AzureOpenAI(
+                azure_endpoint=endpoint,
+                api_key=api_key,
+                api_version=api_version
+        )
+        return client
+    else:
+        openai.api_key = api_key
+        return None
+    
+def get_embedding(text):
+    text = text.replace("\n", " ")
+    model = os.getenv('TEXT_EMBEDDING_MODEL')
+    client = get_client()
+   
+    embeddings = client.embeddings.create(input = [text], model=model).data[0].embedding
+    return embeddings
+
 def text_split_embedd(source):
     logging.info('text_split_embedd')
 
@@ -170,7 +194,7 @@ def text_split_embedd(source):
     df_result = pd.DataFrame()
     for i, g in df.groupby(df.index // 1):
         try:
-            g['curie_search'] = g["text"].apply(lambda x : get_embedding(x, engine =  engine))
+            g['curie_search'] = g["text"].apply(lambda x : get_embedding(x))
 
             df_result = pd.concat([df_result,g], axis=0)
 
@@ -195,28 +219,24 @@ def text_split_embedd(source):
 
     return data, embeddings
 
-def generate_embeddings(text):
-    engine = os.environ['TEXT_EMBEDDING_MODEL']
-    response = openai.Embedding.create(
-    input=text, engine=engine) #engine = deployment name of your ada-0002 model
-    embeddings = response['data'][0]['embedding']
-    return embeddings
 
 def push_to_vector_index(data, embeddings, source):
     logging.info('push_to_vector_index')
-    search_keys = []
-    service_endpoint = os.environ['COG_SEARCH_ENDPOINT']
-    index_name = os.environ['COG_SEARCH_INDEX_NAME']
-    key = os.environ['COG_SEARCH_KEY']
-    credential = AzureKeyCredential(key)
-
-    search_client = SearchClient(endpoint=service_endpoint, index_name=index_name, credential=credential)
-    title_embeddings = generate_embeddings(source)
-
-    path = "https://" + os.environ['STORAGE_ACCOUNT'] + ".blob.core.windows.net/" + os.environ['STORAGE_ACCOUNT_CONTAINER'] + "/" + source
-    path = path.replace(' ', '%20')
-    
     try:
+        search_keys = []
+        service_endpoint = os.environ['COG_SEARCH_ENDPOINT']
+        index_name = os.environ['COG_SEARCH_INDEX_NAME']
+        key = os.environ['COG_SEARCH_KEY']
+        credential = AzureKeyCredential(key)
+
+        logging.info('got credentials')
+        search_client = SearchClient(endpoint=service_endpoint, index_name=index_name, credential=credential)
+        title_embeddings = get_embedding(source)
+
+        path = "https://" + os.environ['STORAGE_ACCOUNT'] + ".blob.core.windows.net/" + os.environ['STORAGE_ACCOUNT_CONTAINER'] + "/" + source
+        path = path.replace(' ', '%20')
+    
+    
         docs = search_client.search(search_text=f"{source}", search_fields=["title"], include_total_count = True)
         count = docs.get_count()
         logging.info('total count retrieved from search = ' + str(count))
